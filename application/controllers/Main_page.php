@@ -16,7 +16,6 @@ class Main_page extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-
         if (is_prod())
         {
             die('In production it will be hard to debug! Run as development environment!');
@@ -26,7 +25,6 @@ class Main_page extends MY_Controller
     public function index()
     {
         $user = User_model::get_user();
-
         App::get_ci()->load->view('main_page', ['user' => User_model::preparation($user, 'default')]);
     }
 
@@ -57,7 +55,10 @@ class Main_page extends MY_Controller
     }
 
 
-    public function comment($post_id,$message){ // or can be App::get_ci()->input->post('news_id') , but better for GET REQUEST USE THIS ( tests )
+    public function comment(){
+        $post_id = App::get_ci()->input->post('post_id');
+        $message = App::get_ci()->input->post('comment');
+        $parent_id = App::get_ci()->input->post('parent_id');
 
         if (!User_model::is_logged()){
             return $this->response_error(CI_Core::RESPONSE_GENERIC_NEED_AUTH);
@@ -77,31 +78,38 @@ class Main_page extends MY_Controller
         }
 
         // Todo: 2 nd task Comment
-        $post->comment();
+        $post->comment($post_id, $message, $parent_id);
 
         $posts =  Post_model::preparation($post, 'full_info');
         return $this->response_success(['post' => $posts]);
     }
 
 
-    public function login($user_id)
+    public function login()
     {
-        // Right now for tests we use from contriller
         $login = App::get_ci()->input->post('login');
         $password = App::get_ci()->input->post('password');
-
         if (empty($login) || empty($password)){
             return $this->response_error(CI_Core::RESPONSE_GENERIC_WRONG_PARAMS);
         }
-
-        // But data from modal window sent by POST request.  App::get_ci()->input...  to get it.
-
-
         //Todo: 1 st task - Authorisation.
+        $user = User_model::find_user_by_email($login);
 
-        Login_model::start_session($user_id);
+        if(!$user) {
+            $user =  User_model::find_user_by_login($login);
+        }
 
-        return $this->response_success(['user' => $user_id]);
+        if (!$user) {
+            return $this->response_error('User not found');
+        }
+
+        if(!$user->password_check($password)) {
+            return $this->response_error('Password wrong');
+        }
+
+        Login_model::start_session($user);
+
+        return $this->response_success();
     }
 
 

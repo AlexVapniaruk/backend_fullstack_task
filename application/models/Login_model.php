@@ -2,14 +2,16 @@
 
 namespace Model;
 use App;
-use CI_Model;
+use CI_Emerald_Model;
 use CriticalException;
 
-class Login_model extends CI_Model {
+class Login_model extends CI_Emerald_Model {
 
     public function __construct()
     {
         parent::__construct();
+
+        $this->load->library('session');
 
     }
 
@@ -24,6 +26,7 @@ class Login_model extends CI_Model {
         $user->is_loaded(TRUE);
 
         App::get_ci()->session->set_userdata('id', $user->get_id());
+        die(var_dump(App::get_ci()->session->get_userdata('id')));
     }
 
 

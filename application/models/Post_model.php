@@ -3,16 +3,9 @@
 namespace Model;
 use App;
 use CI_Emerald_Model;
-use Comment_model;
 use Exception;
 use stdClass;
 
-/**
- * Created by PhpStorm.
- * User: mr.incognito
- * Date: 27.01.2020
- * Time: 10:10
- */
 class Post_model extends CI_Emerald_Model {
     const CLASS_TABLE = 'post';
 
@@ -202,8 +195,14 @@ class Post_model extends CI_Emerald_Model {
         return (App::get_ci()->s->get_affected_rows() > 0);
     }
 
-    public function comment(){
-
+    public function comment($post_id, $message, $parent_id = NULL){
+        Comment_model::create([
+            'user_id' => self::get_user_id(),
+            'assign_id' => $post_id,
+            'text' => $message,
+            'parent_id' => $parent_id
+        ]);
+        return true;
     }
 
     /**

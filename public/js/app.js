@@ -12,6 +12,7 @@ var app = new Vue({
 		amount: 0,
 		likes: 0,
 		commentText: '',
+		parentId: null,
 		packs: [
 			{
 				id: 1,
@@ -57,11 +58,12 @@ var app = new Vue({
 			else{
 				self.invalidLogin = false
 				self.invalidPass = false
-				axios.post('/main_page/login', {
-					login: self.login,
-					password: self.pass
-				})
+				var formdata=new FormData();
+				formdata.append("login", self.login);
+				formdata.append("password", self.pass);
+				axios.post('/main_page/login', formdata)
 					.then(function (response) {
+						window.location.href = '/';
 						setTimeout(function () {
 							$('#loginModal').modal('hide');
 						}, 500);
@@ -85,12 +87,36 @@ var app = new Vue({
 					})
 			}
 		},
+		treeComments(comments) {
+			console.log(comments);
+
+			let comments_array = comments;
+			let keyed = [];
+			comments_array.forEach( item => {
+					item.children = [];
+					keyed[item.id] = item;
+				});
+        	console.log(keyed);
+        	let tree = [];
+			keyed.forEach( item => {
+				let parent = item.parent_id;
+				console.log(item);
+        		if(parent !== null) {
+					keyed[parent].children.push(item);
+				} else {
+        			tree.push(item);
+				}
+				});
+			comments_array = tree;
+			return comments_array;
+		},
 		openPost: function (id) {
 			var self= this;
 			axios
 				.get('/main_page/get_post/' + id)
 				.then(function (response) {
-					self.post = response.data.post;
+					response.data.post.coments = self.treeComments(response.data.post.coments)
+					self.post = response.data.post
 					if(self.post){
 						setTimeout(function () {
 							$('#postModal').modal('show');
@@ -120,6 +146,19 @@ var app = new Vue({
 						}, 500);
 					}
 				})
+		},
+		addComment(postId) {
+			var formdata=new FormData();
+			formdata.append("post_id", postId);
+			formdata.append("comment", this.commentText);
+			formdata.append("parent_id", this.parentId);
+			axios.post('/main_page/comment', formdata)
+				.then((response) => {
+					this.openPost(postId);
+				})
+		},
+		replyToComment(commentId) {
+			this.parentId = commentId
 		}
 	}
 });

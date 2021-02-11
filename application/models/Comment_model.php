@@ -1,11 +1,12 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: mr.incognito
- * Date: 27.01.2020
- * Time: 10:10
- */
+namespace Model;
+
+use App;
+use CI_Emerald_Model;
+use Exception;
+use stdClass;
+
 class Comment_model extends CI_Emerald_Model
 {
     const CLASS_TABLE = 'comment';
@@ -15,6 +16,8 @@ class Comment_model extends CI_Emerald_Model
     protected $user_id;
     /** @var int */
     protected $assing_id;
+    /** @var string */
+    protected $parent_id;
     /** @var string */
     protected $text;
 
@@ -74,6 +77,14 @@ class Comment_model extends CI_Emerald_Model
     public function get_text(): string
     {
         return $this->text;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_parent_id(): ?int
+    {
+        return $this->parent_id;
     }
 
     /**
@@ -235,6 +246,7 @@ class Comment_model extends CI_Emerald_Model
 
             $o->id = $d->get_id();
             $o->text = $d->get_text();
+            $o->parent_id = $d->get_parent_id();
 
             $o->user = User_model::preparation($d->get_user(),'main_page');
 

@@ -182,12 +182,18 @@ use Model\User_model;
                   <span>{{likes}}</span>
                 </div>
               </div>
-              <p class="card-text" v-for="comment in post.coments"> {{comment.user.personaname + ' - '}}<small class="text-muted">{{comment.text}}</small></p>
-              <form class="form-inline">
+                <div v-if="parentId" class="repling-to-comment">
+                    You Repling to:
+                    <p class="card-text comment" v-for="comment in post.coments">
+                        <small class="text-muted" v-if="parentId === comment.id">{{comment.user.personaname}}: {{comment.text}}</small>
+                    </p>
+                </div>
+              <form class="form-inline" @submit.prevent>
+
                 <div class="form-group">
                   <input type="text" class="form-control" id="addComment" v-model="commentText">
                 </div>
-                <button type="submit" class="btn btn-primary">Add comment</button>
+                <button type="submit" class="btn btn-primary" @click="addComment(post.id)">Add comment</button>
               </form>
             </div>
           </div>
